@@ -1,0 +1,20 @@
+[project]
+name = "smart-calendar"
+version = "0.1.0"
+description = "An intelligent AI assistant that helps users manage their calendar efficiently using OpenAI Agents SDK"
+readme = "README.md"
+authors = [
+    { name = "waleed260", email = "vkdeku20@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "openai-agents>=0.1.0",
+    "python-dateutil>=2.9.0",
+]
+
+[project.scripts]
+smart-calendar = "smart_calendar.main:main"
+
+[build-system]
+requires = ["uv_build>=0.9.25,<0.10.0"]
+build-backend = "uv_build"
