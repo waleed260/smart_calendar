@@ -2,10 +2,9 @@
 
 <div align="center">
 
-**An Intelligent AI-Powered Calendar Assistant Built with OpenAI Agents SDK**
+**An Intelligent AI-Powered Calendar Assistant*
 
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 </div>
 
@@ -13,7 +12,7 @@
 
 ## Overview
 
-SmartCalendar is an intelligent conversational AI assistant that revolutionizes how you manage your schedule. Built on the **OpenAI Agents SDK**, it understands natural language, detects scheduling conflicts, and provides smart recommendations to optimize your time.
+SmartCalendar is an intelligent conversational AI assistant that revolutionizes how you manage your schedule. Built on the **Python**, it understands natural language, detects scheduling conflicts, and provides smart recommendations to optimize your time.
 
 Instead of wrestling with complex calendar interfaces, simply tell SmartCalendar what you need in plain English—whether it's "schedule a team meeting tomorrow morning" or "find time for a 30-minute call next week."
 
@@ -27,7 +26,7 @@ Instead of wrestling with complex calendar interfaces, simply tell SmartCalendar
 - Supports multiple date/time formats (12-hour, 24-hour, relative)
 
 ### 🤖 AI-Powered Intelligence
-- Built on OpenAI Agents SDK with function calling
+- Built on Python  with function calling
 - Context-aware conversations with persistent session history
 - Proactive scheduling suggestions and conflict resolution
 
@@ -477,7 +476,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ## 🙏 Acknowledgments
 
-- [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) — The foundation of our AI agent
 - [python-dateutil](https://dateutil.readthedocs.io/) — Date manipulation utilities
 - [uv](https://github.com/astral-sh/uv) — Fast Python package management
 
@@ -487,7 +485,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 **SmartCalendar** — Making calendar management effortless and intelligent.
 
-Built with ❤️ using OpenAI Agents SDK
 
 </div>
 # smart_calendar
