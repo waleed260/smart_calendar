@@ -7,7 +7,6 @@ import argparse
 import os
 import sys
 import uuid
-from typing import Optional
 
 from .agent import SmartCalendarAgent
 from .database import CalendarDatabase
@@ -81,10 +80,10 @@ Natural Language Support:
 
 def get_session_id(session_file: str) -> str:
     """Get or create session ID from file.
-    
+
     Args:
         session_file: Path to session ID file
-        
+
     Returns:
         Session ID string
     """
@@ -94,7 +93,7 @@ def get_session_id(session_file: str) -> str:
                 return f.read().strip()
     except Exception:
         pass
-    
+
     # Create new session ID
     session_id = str(uuid.uuid4())
     try:
@@ -102,7 +101,7 @@ def get_session_id(session_file: str) -> str:
             f.write(session_id)
     except Exception:
         pass
-    
+
     return session_id
 
 
@@ -151,9 +150,7 @@ def main():
     db = CalendarDatabase(args.db)
 
     # Get or create session ID
-    session_file = os.path.join(
-        os.path.expanduser("~"), ".smart_calendar_session"
-    )
+    session_file = os.path.join(os.path.expanduser("~"), ".smart_calendar_session")
     session_id = args.session or get_session_id(session_file)
 
     # Create agent

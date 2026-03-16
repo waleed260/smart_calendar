@@ -1,13 +1,14 @@
 """Event models and data structures for SmartCalendar."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 
 @dataclass
 class CalendarEvent:
     """Represents a calendar event."""
+
     id: int | None = None
     title: str = ""
     date: str = ""  # YYYY-MM-DD
@@ -23,18 +24,16 @@ class CalendarEvent:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "CalendarEvent":
         """Create a CalendarEvent from a dictionary.
-        
+
         Args:
             data: Dictionary with event data
-            
+
         Returns:
             CalendarEvent instance
         """
         participants = []
         if data.get("participants"):
-            participants = [
-                p.strip() for p in data["participants"].split(",")
-            ]
+            participants = [p.strip() for p in data["participants"].split(",")]
 
         created_at = None
         if data.get("created_at"):
@@ -60,7 +59,7 @@ class CalendarEvent:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert event to dictionary.
-        
+
         Returns:
             Dictionary representation of the event
         """
@@ -80,7 +79,7 @@ class CalendarEvent:
 
     def to_display_dict(self) -> dict[str, Any]:
         """Convert event to a display-friendly dictionary.
-        
+
         Returns:
             Dictionary with formatted event data for display
         """
@@ -90,7 +89,9 @@ class CalendarEvent:
             "Start Time": self._format_time(self.start_time),
             "End Time": self._format_time(self.end_time),
             "Duration": self._format_duration(),
-            "Participants": ", ".join(self.participants) if self.participants else "None",
+            "Participants": ", ".join(self.participants)
+            if self.participants
+            else "None",
             "Location": self.location or "Not specified",
         }
 
@@ -118,33 +119,29 @@ class CalendarEvent:
         """Format duration for display."""
         hours = self.duration_minutes // 60
         minutes = self.duration_minutes % 60
-        
+
         parts = []
         if hours:
             parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
         if minutes:
             parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
-        
+
         return " ".join(parts) if parts else "Not specified"
 
     def get_datetime(self) -> datetime:
         """Get event start as datetime."""
-        return datetime.strptime(
-            f"{self.date} {self.start_time}", "%Y-%m-%d %H:%M"
-        )
+        return datetime.strptime(f"{self.date} {self.start_time}", "%Y-%m-%d %H:%M")
 
     def get_end_datetime(self) -> datetime:
         """Get event end as datetime."""
-        return datetime.strptime(
-            f"{self.date} {self.end_time}", "%Y-%m-%d %H:%M"
-        )
+        return datetime.strptime(f"{self.date} {self.end_time}", "%Y-%m-%d %H:%M")
 
     def overlaps_with(self, other: "CalendarEvent") -> bool:
         """Check if this event overlaps with another.
-        
+
         Args:
             other: Another CalendarEvent
-            
+
         Returns:
             True if events overlap
         """
@@ -163,6 +160,7 @@ class CalendarEvent:
 @dataclass
 class TimeSlot:
     """Represents an available time slot."""
+
     date: str  # YYYY-MM-DD
     start_time: str  # HH:MM
     end_time: str  # HH:MM
@@ -189,13 +187,13 @@ class TimeSlot:
         location: str | None = None,
     ) -> CalendarEvent:
         """Convert time slot to a CalendarEvent.
-        
+
         Args:
             title: Event title
             description: Optional event description
             participants: Optional list of participants
             location: Optional location
-            
+
         Returns:
             CalendarEvent instance
         """
@@ -214,16 +212,17 @@ class TimeSlot:
 @dataclass
 class DaySchedule:
     """Represents a day's schedule."""
+
     date: str
     events: list[CalendarEvent] = field(default_factory=list)
     free_slots: list[TimeSlot] = field(default_factory=list)
 
     def to_display_string(self, working_hours: tuple[int, int] = (9, 17)) -> str:
         """Get a display-friendly string representation.
-        
+
         Args:
             working_hours: Tuple of (start_hour, end_hour) for working hours
-            
+
         Returns:
             Formatted schedule string
         """
@@ -241,24 +240,21 @@ class DaySchedule:
         lines.append("")
 
         for i, event in enumerate(self.events, 1):
-            start_formatted = datetime.strptime(
-                event.start_time, "%H:%M"
-            ).strftime("%I:%M %p")
+            start_formatted = datetime.strptime(event.start_time, "%H:%M").strftime(
+                "%I:%M %p"
+            )
             lines.append(
-                f"{i}. {event.title} — {start_formatted} "
-                f"({event.duration_minutes} min)"
+                f"{i}. {event.title} — {start_formatted} ({event.duration_minutes} min)"
             )
 
         if self.free_slots:
             lines.append("")
             lines.append("Free Time:")
             for slot in self.free_slots:
-                start_str = datetime.strptime(
-                    slot.start_time, "%H:%M"
-                ).strftime("%I:%M %p")
-                end_str = datetime.strptime(
-                    slot.end_time, "%H:%M"
-                ).strftime("%I:%M %p")
+                start_str = datetime.strptime(slot.start_time, "%H:%M").strftime(
+                    "%I:%M %p"
+                )
+                end_str = datetime.strptime(slot.end_time, "%H:%M").strftime("%I:%M %p")
                 lines.append(f"  {start_str} – {end_str}")
 
         return "\n".join(lines)
@@ -267,6 +263,7 @@ class DaySchedule:
 @dataclass
 class WeekSchedule:
     """Represents a week's schedule."""
+
     start_date: str
     end_date: str
     days: list[DaySchedule] = field(default_factory=list)
@@ -296,6 +293,7 @@ class WeekSchedule:
 @dataclass
 class ConflictInfo:
     """Information about a scheduling conflict."""
+
     conflicting_events: list[CalendarEvent]
     requested_date: str
     requested_start: str
@@ -310,9 +308,9 @@ class ConflictInfo:
         lines.append("")
 
         for event in self.conflicting_events:
-            start_str = datetime.strptime(
-                event.start_time, "%H:%M"
-            ).strftime("%I:%M %p")
+            start_str = datetime.strptime(event.start_time, "%H:%M").strftime(
+                "%I:%M %p"
+            )
             lines.append(f"• {event.title} ({start_str})")
 
         if self.suggested_slots:

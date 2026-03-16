@@ -2,12 +2,11 @@
 
 import json
 from datetime import datetime
-from typing import Any
 
 from agents import Agent, Runner, function_tool
 
 from .database import CalendarDatabase
-from .models import CalendarEvent, ConflictInfo
+from .models import ConflictInfo
 from .service import CalendarService
 from .session import SessionManager
 
@@ -102,7 +101,7 @@ class SmartCalendarAgent:
         model: str = "gpt-4o-mini",
     ):
         """Initialize the SmartCalendar agent.
-        
+
         Args:
             database: CalendarDatabase instance (creates new one if None)
             session_id: Session ID for conversation history
@@ -115,9 +114,7 @@ class SmartCalendarAgent:
         self.model = model
 
         # Get or create session
-        self.session = self.session_manager.get_or_create_session(
-            self.session_id
-        )
+        self.session = self.session_manager.get_or_create_session(self.session_id)
 
         # Create the agent with tools
         self.agent = self._create_agent()
@@ -125,6 +122,7 @@ class SmartCalendarAgent:
     def _generate_session_id(self) -> str:
         """Generate a unique session ID."""
         import uuid
+
         return str(uuid.uuid4())
 
     def _create_agent(self) -> Agent:
@@ -148,6 +146,7 @@ class SmartCalendarAgent:
     # Tool definitions
     def _create_event_tool(self):
         """Tool to create a new event."""
+
         @function_tool
         def create_event(
             title: str,
@@ -159,7 +158,7 @@ class SmartCalendarAgent:
             location: str | None = None,
         ) -> str:
             """Create a new calendar event.
-            
+
             Args:
                 title: Event title
                 date: Event date in YYYY-MM-DD format
@@ -168,7 +167,7 @@ class SmartCalendarAgent:
                 description: Optional event description
                 participants: Optional list of participant names
                 location: Optional location or meeting link
-                
+
             Returns:
                 Confirmation message or conflict information
             """
@@ -190,9 +189,7 @@ class SmartCalendarAgent:
                     "event": {
                         "Title": event.title,
                         "Date": self._format_date_display(event.date),
-                        "Start Time": self._format_time_display(
-                            event.start_time
-                        ),
+                        "Start Time": self._format_time_display(event.start_time),
                         "Duration": f"{event.duration_minutes} minutes",
                         "Participants": (
                             ", ".join(event.participants)
@@ -210,7 +207,7 @@ class SmartCalendarAgent:
                         slot.to_display_string()
                         for slot in conflict.suggested_slots[:3]
                     ]
-                
+
                 response = {
                     "status": "conflict",
                     "message": message,
@@ -226,14 +223,15 @@ class SmartCalendarAgent:
 
     def _get_schedule_tool(self):
         """Tool to get schedule for a date."""
+
         @function_tool
         def get_schedule(date: str | None = None) -> str:
             """Get the schedule for a specific date or today.
-            
+
             Args:
                 date: Optional date in YYYY-MM-DD format, or natural language
                       like 'today', 'tomorrow', 'next Monday'. Defaults to today.
-                      
+
             Returns:
                 Formatted schedule summary
             """
@@ -244,22 +242,23 @@ class SmartCalendarAgent:
 
     def _check_availability_tool(self):
         """Tool to check availability."""
+
         @function_tool
         def check_availability(
             date: str,
             duration_minutes: int = 60,
         ) -> str:
             """Check available time slots for a given date and duration.
-            
+
             Args:
                 date: Date in YYYY-MM-DD format
                 duration_minutes: Required duration in minutes (default: 60)
-                
+
             Returns:
                 List of available time slots
             """
             slots = self.service.check_availability(date, duration_minutes)
-            
+
             if not slots:
                 return json.dumps(
                     {"status": "no_availability", "message": "No available slots found"}
@@ -283,6 +282,7 @@ class SmartCalendarAgent:
 
     def _reschedule_event_tool(self):
         """Tool to reschedule an event."""
+
         @function_tool
         def reschedule_event(
             event_id: int,
@@ -290,12 +290,12 @@ class SmartCalendarAgent:
             new_start_time: str,
         ) -> str:
             """Reschedule an existing event to a new time.
-            
+
             Args:
                 event_id: The ID of the event to reschedule
                 new_date: New date in YYYY-MM-DD format
                 new_start_time: New start time in HH:MM format (24-hour)
-                
+
             Returns:
                 Confirmation message or conflict information
             """
@@ -313,9 +313,7 @@ class SmartCalendarAgent:
                     "event": {
                         "Title": event.title,
                         "Date": self._format_date_display(event.date),
-                        "Start Time": self._format_time_display(
-                            event.start_time
-                        ),
+                        "Start Time": self._format_time_display(event.start_time),
                         "Duration": f"{event.duration_minutes} minutes",
                     },
                 }
@@ -327,7 +325,7 @@ class SmartCalendarAgent:
                         slot.to_display_string()
                         for slot in conflict.suggested_slots[:3]
                     ]
-                
+
                 response = {
                     "status": "conflict",
                     "message": message,
@@ -340,13 +338,14 @@ class SmartCalendarAgent:
 
     def _cancel_event_tool(self):
         """Tool to cancel an event."""
+
         @function_tool
         def cancel_event(event_id: int) -> str:
             """Cancel/delete an event.
-            
+
             Args:
                 event_id: The ID of the event to cancel
-                
+
             Returns:
                 Confirmation message
             """
@@ -370,22 +369,26 @@ class SmartCalendarAgent:
 
     def _find_events_tool(self):
         """Tool to find events by title."""
+
         @function_tool
         def find_events(title: str, limit: int = 5) -> str:
             """Find events by title (partial match).
-            
+
             Args:
                 title: Title or partial title to search for
                 limit: Maximum number of events to return (default: 5)
-                
+
             Returns:
                 List of matching events
             """
             events = self.service.get_events_by_title(title, limit)
-            
+
             if not events:
                 return json.dumps(
-                    {"status": "not_found", "message": f"No events found matching '{title}'"}
+                    {
+                        "status": "not_found",
+                        "message": f"No events found matching '{title}'",
+                    }
                 )
 
             response = {
@@ -407,18 +410,19 @@ class SmartCalendarAgent:
 
     def _get_upcoming_events_tool(self):
         """Tool to get upcoming events."""
+
         @function_tool
         def get_upcoming_events(limit: int = 5) -> str:
             """Get upcoming events.
-            
+
             Args:
                 limit: Maximum number of events to return (default: 5)
-                
+
             Returns:
                 List of upcoming events
             """
             events = self.service.get_upcoming_events(limit)
-            
+
             if not events:
                 return json.dumps(
                     {"status": "success", "message": "No upcoming events", "events": []}
@@ -443,25 +447,24 @@ class SmartCalendarAgent:
 
     def _suggest_times_tool(self):
         """Tool to suggest optimal meeting times."""
+
         @function_tool
         def suggest_optimal_times(
             duration_minutes: int = 60,
             preferred_days: list[int] | None = None,
         ) -> str:
             """Suggest optimal meeting times based on smart scheduling.
-            
+
             Args:
                 duration_minutes: Required duration in minutes (default: 60)
-                preferred_days: Optional list of preferred weekdays 
+                preferred_days: Optional list of preferred weekdays
                                (0=Monday, 6=Sunday)
-                
+
             Returns:
                 List of suggested time slots
             """
-            slots = self.service.suggest_optimal_times(
-                duration_minutes, preferred_days
-            )
-            
+            slots = self.service.suggest_optimal_times(duration_minutes, preferred_days)
+
             if not slots:
                 return json.dumps(
                     {"status": "no_suggestions", "message": "No optimal times found"}
@@ -501,22 +504,18 @@ class SmartCalendarAgent:
 
     async def run(self, user_input: str) -> str:
         """Run the agent with user input.
-        
+
         Args:
             user_input: User's message
-            
+
         Returns:
             Agent's response
         """
         # Add user message to session history
-        self.session_manager.add_message(
-            self.session_id, "user", user_input
-        )
+        self.session_manager.add_message(self.session_id, "user", user_input)
 
         # Get conversation history
-        history = self.session_manager.get_session_messages(
-            self.session_id, limit=20
-        )
+        history = self.session_manager.get_session_messages(self.session_id, limit=20)
 
         # Run the agent
         result = await Runner.run(
@@ -534,14 +533,15 @@ class SmartCalendarAgent:
 
     def run_sync(self, user_input: str) -> str:
         """Run the agent synchronously.
-        
+
         Args:
             user_input: User's message
-            
+
         Returns:
             Agent's response
         """
         import asyncio
+
         return asyncio.run(self.run(user_input))
 
 
@@ -551,11 +551,11 @@ def create_smart_calendar_agent(
     model: str = "gpt-4o-mini",
 ) -> SmartCalendarAgent:
     """Create a new SmartCalendar agent instance.
-    
+
     Args:
         session_id: Optional session ID for conversation history
         model: OpenAI model to use
-        
+
     Returns:
         SmartCalendarAgent instance
     """

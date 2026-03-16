@@ -32,7 +32,7 @@ class CalendarService:
 
     def __init__(self, database: CalendarDatabase):
         """Initialize the calendar service.
-        
+
         Args:
             database: CalendarDatabase instance
         """
@@ -51,7 +51,7 @@ class CalendarService:
         location: str | None = None,
     ) -> tuple[bool, CalendarEvent | ConflictInfo, str]:
         """Create a new calendar event.
-        
+
         Args:
             title: Event title
             date: Event date (YYYY-MM-DD)
@@ -60,7 +60,7 @@ class CalendarService:
             description: Optional event description
             participants: Optional list of participants
             location: Optional location
-            
+
         Returns:
             Tuple of (success, event_or_conflict, message)
         """
@@ -77,7 +77,7 @@ class CalendarService:
             suggested_slots = self.find_available_slots(
                 date, duration_minutes, max_days=3
             )
-            
+
             conflict_info = ConflictInfo(
                 conflicting_events=[CalendarEvent.from_dict(c) for c in conflicts],
                 requested_date=date,
@@ -88,13 +88,11 @@ class CalendarService:
             return (
                 False,
                 conflict_info,
-                f"Cannot schedule '{title}' due to conflicts. Please choose another time."
+                f"Cannot schedule '{title}' due to conflicts. Please choose another time.",
             )
 
         # Create the event
-        participants_str = (
-            ", ".join(participants) if participants else None
-        )
+        participants_str = ", ".join(participants) if participants else None
         event_id = self.db.create_event(
             title=title,
             date=date,
@@ -123,10 +121,10 @@ class CalendarService:
     # Event Retrieval
     def get_event(self, event_id: int) -> CalendarEvent | None:
         """Get an event by ID.
-        
+
         Args:
             event_id: Event ID
-            
+
         Returns:
             CalendarEvent or None
         """
@@ -135,15 +133,13 @@ class CalendarService:
             return CalendarEvent.from_dict(event_data)
         return None
 
-    def get_events_by_title(
-        self, title: str, limit: int = 5
-    ) -> list[CalendarEvent]:
+    def get_events_by_title(self, title: str, limit: int = 5) -> list[CalendarEvent]:
         """Get events by title (partial match).
-        
+
         Args:
             title: Title to search for
             limit: Maximum number of events to return
-            
+
         Returns:
             List of matching CalendarEvents
         """
@@ -152,10 +148,10 @@ class CalendarService:
 
     def get_events_for_date(self, date: str) -> DaySchedule:
         """Get all events for a specific date.
-        
+
         Args:
             date: Date in YYYY-MM-DD format
-            
+
         Returns:
             DaySchedule with events and free slots
         """
@@ -167,22 +163,20 @@ class CalendarService:
 
         return DaySchedule(date=date, events=events, free_slots=free_slots)
 
-    def get_events_for_week(
-        self, start_date: str
-    ) -> WeekSchedule:
+    def get_events_for_week(self, start_date: str) -> WeekSchedule:
         """Get all events for a week.
-        
+
         Args:
             start_date: Start date of the week (YYYY-MM-DD)
-            
+
         Returns:
             WeekSchedule with daily schedules
         """
         start_dt = datetime.strptime(start_date, "%Y-%m-%d")
         end_dt = start_dt + timedelta(days=6)
-        
+
         end_date = end_dt.strftime("%Y-%m-%d")
-        
+
         events_data = self.db.get_events_by_date_range(start_date, end_date)
         events = [CalendarEvent.from_dict(e) for e in events_data]
 
@@ -193,7 +187,9 @@ class CalendarService:
             date_str = current_dt.strftime("%Y-%m-%d")
             day_events = [e for e in events if e.date == date_str]
             free_slots = self._calculate_free_slots(date_str, day_events)
-            days.append(DaySchedule(date=date_str, events=day_events, free_slots=free_slots))
+            days.append(
+                DaySchedule(date=date_str, events=day_events, free_slots=free_slots)
+            )
             current_dt += timedelta(days=1)
 
         return WeekSchedule(
@@ -206,11 +202,11 @@ class CalendarService:
         self, date: str, events: list[CalendarEvent]
     ) -> list[TimeSlot]:
         """Calculate free time slots for a date.
-        
+
         Args:
             date: Date in YYYY-MM-DD format
             events: List of events for the date
-            
+
         Returns:
             List of available TimeSlots
         """
@@ -221,9 +217,7 @@ class CalendarService:
                     date=date,
                     start_time=f"{self.WORKING_HOUR_START:02d}:00",
                     end_time=f"{self.WORKING_HOUR_END:02d}:00",
-                    duration_minutes=(
-                        self.WORKING_HOUR_END - self.WORKING_HOUR_START
-                    )
+                    duration_minutes=(self.WORKING_HOUR_END - self.WORKING_HOUR_START)
                     * 60,
                 )
             ]
@@ -288,12 +282,12 @@ class CalendarService:
         new_start_time: str,
     ) -> tuple[bool, CalendarEvent | ConflictInfo, str]:
         """Reschedule an existing event.
-        
+
         Args:
             event_id: Event ID to reschedule
             new_date: New date (YYYY-MM-DD)
             new_start_time: New start time (HH:MM)
-            
+
         Returns:
             Tuple of (success, event_or_conflict, message)
         """
@@ -316,7 +310,7 @@ class CalendarService:
             suggested_slots = self.find_available_slots(
                 new_date, event.duration_minutes, max_days=3
             )
-            
+
             conflict_info = ConflictInfo(
                 conflicting_events=[CalendarEvent.from_dict(c) for c in conflicts],
                 requested_date=new_date,
@@ -327,7 +321,7 @@ class CalendarService:
             return (
                 False,
                 conflict_info,
-                f"Cannot reschedule to the new time due to conflicts."
+                "Cannot reschedule to the new time due to conflicts.",
             )
 
         # Update the event
@@ -356,10 +350,10 @@ class CalendarService:
     # Event Cancellation
     def cancel_event(self, event_id: int) -> tuple[bool, CalendarEvent | None, str]:
         """Cancel/delete an event.
-        
+
         Args:
             event_id: Event ID to cancel
-            
+
         Returns:
             Tuple of (success, deleted_event, message)
         """
@@ -379,21 +373,22 @@ class CalendarService:
         preferred_end: str | None = None,
     ) -> list[TimeSlot]:
         """Check available time slots for a given duration.
-        
+
         Args:
             date: Date to check (YYYY-MM-DD)
             duration_minutes: Required duration in minutes
             preferred_start: Optional preferred start time (HH:MM)
             preferred_end: Optional preferred end time (HH:MM)
-            
+
         Returns:
             List of available TimeSlots
         """
         day_schedule = self.get_events_for_date(date)
-        
+
         # Filter slots by duration
         available_slots = [
-            slot for slot in day_schedule.free_slots
+            slot
+            for slot in day_schedule.free_slots
             if slot.duration_minutes >= duration_minutes
         ]
 
@@ -403,19 +398,19 @@ class CalendarService:
             for slot in available_slots:
                 slot_start = self._time_to_minutes(slot.start_time)
                 slot_end = self._time_to_minutes(slot.end_time)
-                
+
                 if preferred_start:
                     pref_start = self._time_to_minutes(preferred_start)
                     if slot_end <= pref_start:
                         continue
-                
+
                 if preferred_end:
                     pref_end = self._time_to_minutes(preferred_end)
                     if slot_start >= pref_end:
                         continue
-                
+
                 filtered_slots.append(slot)
-            
+
             available_slots = filtered_slots
 
         return available_slots
@@ -427,12 +422,12 @@ class CalendarService:
         max_days: int = 7,
     ) -> list[TimeSlot]:
         """Find available time slots across multiple days.
-        
+
         Args:
             start_date: Start searching from this date (YYYY-MM-DD)
             duration_minutes: Required duration in minutes
             max_days: Maximum number of days to search
-            
+
         Returns:
             List of available TimeSlots (up to 10)
         """
@@ -457,12 +452,12 @@ class CalendarService:
         avoid_days: list[str] | None = None,
     ) -> list[TimeSlot]:
         """Suggest optimal meeting times based on smart scheduling.
-        
+
         Args:
             duration_minutes: Required duration in minutes
             preferred_days: Optional list of preferred weekdays (0=Monday, 6=Sunday)
             avoid_days: Optional list of days to avoid
-            
+
         Returns:
             List of suggested TimeSlots
         """
@@ -490,7 +485,7 @@ class CalendarService:
             # Prioritize mid-morning and mid-afternoon slots
             for slot in day_slots:
                 slot_start = self._time_to_minutes(slot.start_time)
-                
+
                 # Prefer 10-11 AM or 2-4 PM
                 if (10 * 60 <= slot_start <= 11 * 60) or (
                     14 * 60 <= slot_start <= 16 * 60
@@ -501,14 +496,12 @@ class CalendarService:
 
         return suggestions
 
-    def get_schedule_summary(
-        self, date: str | None = None
-    ) -> str:
+    def get_schedule_summary(self, date: str | None = None) -> str:
         """Get a summary of the schedule for a date or today.
-        
+
         Args:
             date: Optional date (YYYY-MM-DD). Defaults to today.
-            
+
         Returns:
             Formatted schedule summary string
         """
@@ -521,7 +514,7 @@ class CalendarService:
             "tomorrow": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"),
             "yesterday": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d"),
         }
-        
+
         if date.lower() in day_names:
             date = day_names[date.lower()]
 
@@ -532,16 +525,15 @@ class CalendarService:
 
     def get_upcoming_events(self, limit: int = 5) -> list[CalendarEvent]:
         """Get upcoming events.
-        
+
         Args:
             limit: Maximum number of events to return
-            
+
         Returns:
             List of upcoming CalendarEvents
         """
-        today = datetime.now().strftime("%Y-%m-%d")
         all_events = self.db.get_all_events()
-        
+
         # Filter to future events and sort
         upcoming = []
         for event_data in all_events:
@@ -552,16 +544,16 @@ class CalendarService:
 
         # Sort by date and time
         upcoming.sort(key=lambda e: e.get_datetime())
-        
+
         return upcoming[:limit]
 
     # Helper methods for the agent
     def format_event_for_display(self, event: CalendarEvent) -> dict[str, Any]:
         """Format an event for display.
-        
+
         Args:
             event: CalendarEvent to format
-            
+
         Returns:
             Dictionary with formatted event data
         """
@@ -578,7 +570,7 @@ class CalendarService:
         location: str | None = None,
     ) -> tuple[bool, CalendarEvent | ConflictInfo, str]:
         """Create an event using natural language date/time.
-        
+
         Args:
             title: Event title
             natural_date: Natural language date expression
@@ -587,33 +579,34 @@ class CalendarService:
             description: Optional description
             participants: Optional participants
             location: Optional location
-            
+
         Returns:
             Tuple of (success, event_or_conflict, message)
         """
         # Parse natural language
         date = self.time_parser.parse_date(natural_date)
         time = self.time_parser.parse_time(natural_time)
-        
+
         if not date:
             return (
                 False,
                 None,
-                f"Could not understand the date '{natural_date}'. Please use a format like 'tomorrow', 'next Monday', or '2024-01-15'."
+                f"Could not understand the date '{natural_date}'. Please use a format like 'tomorrow', 'next Monday', or '2024-01-15'.",
             )
-        
+
         if not time:
             return (
                 False,
                 None,
-                f"Could not understand the time '{natural_time}'. Please use a format like '9 AM', '2:30 PM', or '14:00'."
+                f"Could not understand the time '{natural_time}'. Please use a format like '9 AM', '2:30 PM', or '14:00'.",
             )
 
         # Use default duration if not specified
         if duration_minutes is None:
-            duration_minutes = self.time_parser.parse_duration(
-                natural_time
-            ) or self.DEFAULT_MEETING_DURATION
+            duration_minutes = (
+                self.time_parser.parse_duration(natural_time)
+                or self.DEFAULT_MEETING_DURATION
+            )
 
         return self.create_event(
             title=title,
