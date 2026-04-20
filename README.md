@@ -467,25 +467,3 @@ CREATE TABLE messages (
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [python-dateutil](https://dateutil.readthedocs.io/) — Date manipulation utilities
-- [uv](https://github.com/astral-sh/uv) — Fast Python package management
-
----
-
-<div align="center">
-
-**SmartCalendar** — Making calendar management effortless and intelligent.
-
-
-</div>
-# smart_calendar
-
-
