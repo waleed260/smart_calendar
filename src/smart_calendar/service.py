@@ -586,3 +586,35 @@ class CalendarService:
         # Parse natural language
         date = self.time_parser.parse_date(natural_date)
         time = self.time_parser.parse_time(natural_time)
+        
+        if not date:
+            return (
+                False,
+                None,
+                f"Could not understand the date '{natural_date}'. Please use a format like 'tomorrow', 'next Monday', or '2024-01-15'.",
+            )
+
+        if not time:
+            return (
+                False,
+                None,
+                f"Could not understand the time '{natural_time}'. Please use a format like '9 AM', '2:30 PM', or '14:00'.",
+            )
+
+        # Use default duration if not specified
+        if duration_minutes is None:
+            duration_minutes = (
+                self.time_parser.parse_duration(natural_time)
+                or self.DEFAULT_MEETING_DURATION
+            )
+
+        return self.create_event(
+            title=title,
+            date=date,
+            start_time=time,
+            duration_minutes=duration_minutes,
+            description=description,
+            participants=participants,
+            location=location,
+        )
+
